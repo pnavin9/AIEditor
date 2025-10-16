@@ -25,8 +25,6 @@ RUN npm ci --omit=dev --no-audit --no-fund
 # Copy server and built assets
 COPY --from=builder /app/dist ./dist
 COPY server.cjs ./server.cjs
-COPY index.html ./index.html
-COPY style.css ./style.css
 COPY manual.mmd ./manual.mmd
 
 # Expose server port

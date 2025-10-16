@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 3001;
+const BASE_DIR = path.join(__dirname, 'dist');
 
 const server = http.createServer((req, res) => {
   // Enable CORS for Vite dev server
@@ -106,23 +107,30 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Serve static files
-  let filePath = '.' + req.url;
-  if (filePath === './') {
-    filePath = './index.html';
-  }
+  // Serve static files from built assets in dist for production
+  const urlPath = req.url === '/' ? '/index.html' : req.url;
+  const resolvedPath = path.join(BASE_DIR, urlPath.replace(/^\//, ''));
 
-  const extname = String(path.extname(filePath)).toLowerCase();
+  const extname = String(path.extname(resolvedPath)).toLowerCase();
   const mimeTypes = {
     '.html': 'text/html',
     '.js': 'text/javascript',
+    '.mjs': 'text/javascript',
     '.css': 'text/css',
+    '.map': 'application/json',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.woff2': 'font/woff2',
+    '.woff': 'font/woff',
+    '.ttf': 'font/ttf',
     '.mmd': 'text/plain'
   };
 
   const contentType = mimeTypes[extname] || 'application/octet-stream';
 
-  fs.readFile(filePath, (error, content) => {
+  fs.readFile(resolvedPath, (error, content) => {
     if (error) {
       if (error.code === 'ENOENT') {
         res.writeHead(404, { 'Content-Type': 'text/html' });
