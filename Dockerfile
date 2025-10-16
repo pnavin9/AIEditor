@@ -11,6 +11,10 @@ RUN npm ci --no-audit --no-fund
 # Copy source
 COPY . .
 
+# Ensure Vite env is available at build time
+ARG VITE_MISTRAL_API_KEY
+ENV VITE_MISTRAL_API_KEY=${VITE_MISTRAL_API_KEY}
+
 # Build static assets
 RUN npm run build
 
