@@ -4,6 +4,9 @@ A split-pane web app:
 - Left: renders the `manual.mmd` document (Mathpix Markdown + MathJax)
 - Right: chat panel to request natural-language edits with preview and undo/redo
 
+### Deployed
+- Live app (Railway): [aieditor-production.up.railway.app](https://aieditor-production.up.railway.app/)
+
 ### Quick Start
 
 1) Install
