@@ -198,11 +198,22 @@ ${outlineText}`;
               if (assistantPlaceholder) assistantPlaceholder.textContent = '';
 
               if (functionCall && (functionCall.functionName === 'update_text' || functionCall.functionName === 'replace_text')) {
+                // Require an actual selection to map old_text precisely;
+                if (!rawSelection) {
+                  this.addMessage('system', 'No selection detected. Select the exact text to replace and try again.');
+                  return;
+                }
                 if (this.onShowPreview) {
                   this.addMessage('assistant', '📝 Preparing changes for your review...');
                   const coercedNewText = typeof functionCall.parameters.new_text === 'string'
                     ? functionCall.parameters.new_text
                     : String(functionCall.parameters.new_text ?? '');
+                  // Client-side fence safety: avoid showing a preview that would break markdown UI
+                  const fenceCount = (coercedNewText.match(/```/g) || []).length;
+                  if (fenceCount % 2 !== 0) {
+                    this.addMessage('system', 'Proposed edit has unbalanced ``` fences. Please fix and retry.');
+                    return;
+                  }
                   const preview: ChangePreview = {
                     oldText: rawSelection,
                     newText: coercedNewText,

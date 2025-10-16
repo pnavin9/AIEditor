@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const { countOccurrences, hasUnbalancedFences } = require('./utils/textEditSafety');
 
 const PORT = 3001;
 const BASE_DIR = path.join(__dirname, 'dist');
@@ -83,6 +84,23 @@ const server = http.createServer((req, res) => {
             searchedLength: oldText.length,
             firstChars: oldText.substring(0, 50)
           }));
+          return;
+        }
+
+        const occurrences = countOccurrences(fileLF, foundText);
+        if (occurrences > 1) {
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ 
+            error: 'Ambiguous edit: multiple matches found',
+            matches: occurrences
+          }));
+          return;
+        }
+
+        // Basic safety: avoid introducing obviously unbalanced triple-fence blocks that can break Markdown rendering
+        if (typeof newText === 'string' && hasUnbalancedFences(newText.replace(/\r\n/g, '\n'))) {
+          res.writeHead(422, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Unsafe edit: unbalanced code fences detected in newText' }));
           return;
         }
 

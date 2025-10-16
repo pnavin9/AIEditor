@@ -111,6 +111,12 @@ export class FunctionExecutor {
     // Minimal normalization: keep LaTeX as-is; only unify line endings
     if (typeof new_text === 'string') {
       new_text = new_text.replace(/\r\n/g, '\n');
+      // Preflight safety: detect unbalanced triple-backtick fences which can break markdown rendering
+      const textStr = new_text as string;
+      const fenceCount = (textStr.match(/```/g) || []).length;
+      if (fenceCount % 2 !== 0) {
+        throw new Error('Unsafe edit: unbalanced code fences detected. Please close all ``` blocks.');
+      }
     }
 
     const success = await this.fileUpdateService.updateManual(old_text, new_text);
