@@ -1,100 +1,65 @@
-# AI Editor with Mistral Chat
+### AI Editor – Split-Pane Markdown + Chat Edits (TS + Vite)
 
-A Vite-based application with a two-panel layout: left panel displays documentation with MathJax rendering, right panel provides an AI chat interface powered by Mistral API.
+A split-pane web app:
+- Left: renders the `manual.mmd` document (Mathpix Markdown + MathJax)
+- Right: chat panel to request natural-language edits with preview and undo/redo
 
-## Features
+### Quick Start
 
-- 📖 Left Panel: Displays `manual.mmd` with live reload and MathJax support
-- 💬 Right Panel: Chat with Mistral AI
-- ✨ Select text from left panel and send it to chat with surrounding context
-- 🤖 **LLM-Driven Function Calling**: AI decides when to make changes
-- ✏️ Edit documents: AI can modify selected text (fix typos, rewrite, format, etc.)
-- ↶↷ Undo/Redo: Revert or reapply AI changes
-- 🔥 Hot Module Replacement for instant updates
-
-## Setup
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Configure Mistral API Key:**
-   - Create a `.env` file in the project root
-   - Add your Mistral API key:
-     ```
-     VITE_MISTRAL_API_KEY=your_actual_api_key_here
-     ```
-   - Get your API key from: https://console.mistral.ai/
-
-3. **Run the application:**
-   ```bash
-   npm start
-   ```
-   or
-   ```bash
-   npm run dev
-   ```
-
-4. **Open in browser:**
-   - Navigate to `http://localhost:3000`
-
-## Usage
-
-### Chatting
-- Type your message in the input box at the bottom of the right panel
-- Click "Send" or press Enter to send
-- Use Shift+Enter for new lines
-
-### Using Selected Text with Context
-- Select any text from the left panel (documentation)
-- Type your question or instruction
-- The AI receives your selection with 5 lines of context before and after
-- This helps the AI understand the full context for better responses
-
-### AI-Driven Document Editing
-The AI can now decide when to make changes to the document. Simply select text and give natural instructions:
-
-**Examples:**
-- "fix the typos in this paragraph"
-- "turn this into a checklist"
-- "make this simpler"
-- "rewrite this in bullet points"
-- "convert this to a numbered list"
-- "correct the grammar"
-- "expand this section with more details"
-
-The AI will:
-1. Understand your intent
-2. Decide if changes are needed
-3. Call the `update_text` function automatically
-4. Update the file if modifications are requested
-5. Just respond conversationally if no changes are needed
-
-### Undo/Redo Changes
-- Click **↶ Undo** to revert the last AI-made change
-- Click **↷ Redo** to reapply a change you undid
-- History tracks up to 50 changes (with 50KB limit per change)
-
-### How Function Calling Works
-The AI has access to these functions:
-- `update_text`: Modify text in the document
-- `replace_text`: Same as update_text
-
-When you ask the AI to make changes, it outputs:
-```
-FUNCTION_CALL: update_text
-{
-  "old_text": "original text",
-  "new_text": "modified text"
-}
+1) Install
+```bash
+npm install
 ```
 
-The system automatically:
-1. Parses the function call
-2. Executes it
-3. Updates the file
-4. Adds to undo history
+2) Set API key (server reads `MISTRAL_API_KEY` or `VITE_MISTRAL_API_KEY`)
+```bash
+export MISTRAL_API_KEY=your_mistral_api_key
+```
+
+3) Run dev (starts Vite and API server)
+```bash
+npm run dev
+```
+Open `http://localhost:5173` (Vite). The API runs on `http://localhost:3001`.
+
+4) Build + serve (production)
+```bash
+npm run build
+node server.cjs
+```
+Open `http://localhost:3001` (server serves `dist/`).
+
+### Selection Model
+
+- You select text in the left panel; the app tries to captures the exact raw substring from `manual.mmd`.
+- When sending a request, the app includes:
+  - The selected text
+  - ~10 lines of context before/after (to help the LLM stay precise)
+- If no selection exists, the app sends a compact document outline instead. For edits, a selection is required.
+
+### Edit Flow
+
+1) You ask for an edit (e.g., “turn this into a checklist”).
+2) The LLM proposes `new_text` for the selected `old_text`.
+3) The left panel shows a before/after preview.
+4) You Accept (apply) or Discard.
+5) Undo/Redo is available for applied changes.
+
+### Safety & Limitations
+
+- Change viewer is not inline; it opens as a modal rather than inline diff.
+- Exact text location is not guaranteed; the app guesses where the text occurs in the MD file.
+- Applying accepts replaces all instances of `old_text` with `new_text` in the matched region.
+
+### Scripts
+
+- `npm run dev` – start Vite (frontend) and API server
+- `npm start` – same as dev
+- `npm run build` – build frontend to `dist/`
+- `npm run preview` – Vite preview server (frontend only)
+- `npm run api` – start API server only (`http://localhost:3001`)
+
+
 
 ## Project Structure
 

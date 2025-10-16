@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { countOccurrences, hasUnbalancedFences } = require('./utils/textEditSafety');
+const { countOccurrences, hasUnbalancedFences } = require('./utils/textEditSafety.cjs');
 
 const PORT = 3001;
 const BASE_DIR = path.join(__dirname, 'dist');

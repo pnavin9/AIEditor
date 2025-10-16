@@ -30,7 +30,6 @@ RUN npm ci --omit=dev --no-audit --no-fund
 COPY --from=builder /app/dist ./dist
 COPY server.cjs ./server.cjs
 COPY manual.mmd ./manual.mmd
-COPY --from=builder /app/utils ./utils
 
 # Expose server port
 EXPOSE 3001
