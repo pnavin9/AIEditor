@@ -6,12 +6,6 @@ import { UndoRedoButtons } from './components/UndoRedoButtons';
 let inputFileContent: string = '' as any;
 const isDev = !!(import.meta as any).hot;
 
-// Get API key from environment or fallback (development/testing only)
-const apiKey = (import.meta as any).env?.VITE_MISTRAL_API_KEY || '';
-if (!apiKey) {
-  console.warn('VITE_MISTRAL_API_KEY is not set. Requests to Mistral will fail.');
-}
-
 // Load MathJax and markdown renderer
 const script = document.createElement('script');
 script.src = "https://cdn.jsdelivr.net/npm/mathpix-markdown-it@2.0.6/es5/bundle.js";
@@ -27,7 +21,7 @@ script.onload = async function() {
 
   // Initialize components
   leftPanel = new LeftPanel('left-panel');
-  const rightPanel = new RightPanel('editor', 'enter-btn', 'chat-container', apiKey);
+  const rightPanel = new RightPanel('editor', 'enter-btn', 'chat-container', '');
   const undoRedoButtons = new UndoRedoButtons('undo-btn', 'redo-btn');
 
   // Connect undo/redo to right panel

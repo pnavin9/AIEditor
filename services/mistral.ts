@@ -1,12 +1,16 @@
 import { ChatMessage } from '../types/shared';
 
-/** Simple client for Mistral chat completions. */
+/** Simple client for chat completions via server proxy. */
 export class MistralService {
-  private apiKey: string;
-  private apiUrl = 'https://api.mistral.ai/v1/chat/completions';
+  private apiUrl: string;
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
+  constructor(_apiKey: string) {
+    // Use same-origin in prod, localhost:3001 in dev
+    const origin = (typeof window !== 'undefined' && window.location?.origin) || '';
+    const base = origin.includes('localhost') || origin.includes('127.0.0.1')
+      ? 'http://localhost:3001'
+      : origin;
+    this.apiUrl = `${base}/api/chat`;
   }
 
   /**
@@ -22,7 +26,6 @@ export class MistralService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`
       },
       body: JSON.stringify({
         model: 'mistral-small-latest',

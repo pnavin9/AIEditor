@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 const PORT = 3001;
 const BASE_DIR = path.join(__dirname, 'dist');
@@ -113,6 +114,51 @@ const server = http.createServer((req, res) => {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: error.message }));
       }
+    });
+    return;
+  }
+
+  // API endpoint to proxy chat to Mistral with server-side key
+  if (req.method === 'POST' && req.url === '/api/chat') {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk.toString(); });
+    req.on('end', () => {
+      const apiKey = process.env.MISTRAL_API_KEY || process.env.VITE_MISTRAL_API_KEY || '';
+      if (!apiKey) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Server missing MISTRAL_API_KEY' }));
+        return;
+      }
+
+      const payload = body || JSON.stringify({ messages: [] });
+
+      const options = {
+        method: 'POST',
+        hostname: 'api.mistral.ai',
+        path: '/v1/chat/completions',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        }
+      };
+
+      const upstream = https.request(options, (upstreamRes) => {
+        // Stream status and headers adapted for SSE/text streaming
+        const isStream = (upstreamRes.headers['content-type'] || '').includes('text/event-stream');
+        if (isStream) {
+          res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
+        } else {
+          res.writeHead(upstreamRes.statusCode || 200, { 'Content-Type': upstreamRes.headers['content-type'] || 'application/json' });
+        }
+        upstreamRes.on('data', (chunk) => res.write(chunk));
+        upstreamRes.on('end', () => res.end());
+      });
+      upstream.on('error', (err) => {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Upstream error', details: err.message }));
+      });
+      upstream.write(payload);
+      upstream.end();
     });
     return;
   }
