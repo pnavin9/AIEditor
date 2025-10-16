@@ -7,6 +7,50 @@ A split-pane web app:
 ### Deployed
 - Live app (Railway): [aieditor-production.up.railway.app](https://aieditor-production.up.railway.app/)
 
+### Agentic AI Flow (basic)
+
+```mermaid
+sequenceDiagram
+  actor User
+  participant LP as LeftPanel
+  participant RP as RightPanel
+  participant FE as FunctionExecutor
+  participant API as Server API
+  participant MAI as Mistral API
+  participant M as manual.mmd
+
+  User->>RP: Type request / click Send
+  RP->>API: POST /api/chat (stream)
+  API->>MAI: /v1/chat/completions
+  MAI-->>API: Stream tokens
+  API-->>RP: Proxy stream
+  alt Model returns FUNCTION_CALL
+    RP->>FE: Detect FUNCTION_CALL(...)
+    FE-->>RP: Parsed function call
+    RP->>LP: Show change preview
+    User->>LP: Accept changes
+    LP->>API: POST /api/update-manual
+    API->>M: Write updated content
+    API-->>LP: SSE manual_updated
+    LP->>API: GET /api/manual
+    API-->>LP: Updated content
+    LP->>LP: Re-render
+  else Plain assistant response (no tool call)
+    RP-->>User: Render assistant message
+  end
+```
+### High-Level Architecture
+
+```mermaid
+graph LR
+  User((User)) --> RP[RightPanel]
+  RP --> API[Server API]
+  API --> MAPI[Mistral API]
+  User --> LP[LeftPanel]
+  LP --> File[manual.mmd]
+  RP --> LP
+  API --> File
+```
 ### Quick Start
 
 1) Install
