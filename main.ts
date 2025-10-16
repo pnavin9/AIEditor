@@ -2,7 +2,9 @@ import './style.css';
 import { LeftPanel } from './components/LeftPanel';
 import { RightPanel } from './components/RightPanel';
 import { UndoRedoButtons } from './components/UndoRedoButtons';
-import inputFileContent from './manual.mmd?raw';
+// In dev, we use Vite raw import; in prod we fetch from server
+let inputFileContent: string = '' as any;
+const isDev = !!(import.meta as any).hot;
 
 // Get API key from environment or fallback (development/testing only)
 const apiKey = (import.meta as any).env?.VITE_MISTRAL_API_KEY || '';
@@ -17,7 +19,7 @@ document.head.append(script);
 
 let leftPanel: LeftPanel;
 
-script.onload = function() {
+script.onload = async function() {
   const isLoaded = (window as any).loadMathJax();
   if (isLoaded) {
     console.log('File Loaded');
@@ -60,7 +62,37 @@ script.onload = function() {
   });
 
   // Load content into left panel
+  if (isDev) {
+    const devModule = await import('./manual.mmd?raw');
+    inputFileContent = devModule.default;
+  } else {
+    try {
+      const resp = await fetch('/api/manual');
+      inputFileContent = await resp.text();
+    } catch (e) {
+      console.error('Failed to fetch manual content', e);
+      inputFileContent = '';
+    }
+  }
   leftPanel.loadContent(inputFileContent);
+
+  // In production, listen to SSE updates to refresh content
+  if (!isDev) {
+    try {
+      const es = new EventSource('/api/events');
+      es.addEventListener('manual_updated', async () => {
+        try {
+          const resp = await fetch('/api/manual');
+          const text = await resp.text();
+          leftPanel.loadContent(text);
+        } catch (e) {
+          console.error('Failed to refresh manual after update', e);
+        }
+      });
+    } catch (e) {
+      console.warn('SSE not available; manual updates will not live-refresh.', e);
+    }
+  }
 };
 
 // Enable HMR for manual.mmd changes in development environment

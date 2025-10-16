@@ -1,4 +1,9 @@
-const API_URL = 'http://localhost:3001';
+// Determine API base automatically: use same origin in production, localhost in dev
+const API_URL = (typeof window !== 'undefined' && window.location && window.location.origin)
+  ? (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+      ? 'http://localhost:3001'
+      : window.location.origin)
+  : 'http://localhost:3001';
 
 export interface FileUpdateRequest {
   oldText: string;

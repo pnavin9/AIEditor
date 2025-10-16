@@ -5,6 +5,10 @@ const path = require('path');
 const PORT = 3001;
 const BASE_DIR = path.join(__dirname, 'dist');
 
+// Simple in-memory list of SSE clients
+/** @type {import('http').ServerResponse[]} */
+const sseClients = [];
+
 const server = http.createServer((req, res) => {
   // Enable CORS for Vite dev server
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -97,12 +101,54 @@ const server = http.createServer((req, res) => {
         }
         fs.writeFileSync(filePath, updatedContent, 'utf-8');
 
+        // Notify SSE clients that manual was updated
+        const event = `event: manual_updated\n` + `data: {"updated": true}\n\n`;
+        sseClients.forEach((client) => {
+          try { client.write(event); } catch (_) {}
+        });
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, message: 'File updated successfully' }));
       } catch (error) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: error.message }));
       }
+    });
+    return;
+  }
+
+  // Serve current manual content (text/plain)
+  if (req.method === 'GET' && req.url === '/api/manual') {
+    const filePath = path.join(__dirname, 'manual.mmd');
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end(content);
+    } catch (error) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to read manual.mmd' }));
+    }
+    return;
+  }
+
+  // Server-Sent Events endpoint for live updates
+  if (req.method === 'GET' && req.url === '/api/events') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      // Allow CORS for dev tooling
+      'Access-Control-Allow-Origin': '*',
+    });
+
+    // Send a comment/heartbeat immediately
+    res.write(`: connected\n\n`);
+
+    sseClients.push(res);
+
+    req.on('close', () => {
+      const idx = sseClients.indexOf(res);
+      if (idx !== -1) sseClients.splice(idx, 1);
     });
     return;
   }
