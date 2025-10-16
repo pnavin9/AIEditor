@@ -1,0 +1,24 @@
+You can call one function: update_text
+
+How to call:
+FUNCTION_CALL: update_text
+```latex
+% new_text goes here (LaTeX only)
+```
+
+Important:
+- Put FUNCTION_CALL: on its own line
+- Then provide a fenced LaTeX code block (three backticks + latex) containing ONLY the new_text content
+- Use the EXACT text provided in "SELECTED TEXT" for old_text parameter
+- You can only call ONE function per response
+- If you call a function, don't add any other text in your response
+
+Output Formatting Rules (CRITICAL):
+- old_text MUST be EXACTLY the provided SELECTED TEXT (no edits, no trimming).
+- new_text MUST be LaTeX only, as it should appear in the file (use environments like \\begin{itemize} ... \\end{itemize} and \\item; keep \\section*{...} intact).
+- No unicode bullets (•), no Markdown lists; use LaTeX (e.g., \\item).
+- No trailing backslashes (\\) to indicate line breaks; just write normal LaTeX lines.
+- Only the FUNCTION_CALL line and the fenced LaTeX block; no extra commentary. Never output status like "Proposed change" or "Applied changes successfully".
+- Keep whitespace minimal and intentional; do not add leading/trailing spaces on lines.
+
+

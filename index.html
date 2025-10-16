@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Editor</title>
+</head>
+<body>
+  <div class="container">
+    <div id="left-panel" class="panel">
+      <!-- File content will be rendered here -->
+    </div>
+    <div id="right-panel" class="panel">
+      <div class="toolbar">
+        <button id="undo-btn" class="toolbar-button" title="Undo">↶ Undo</button>
+        <button id="redo-btn" class="toolbar-button" title="Redo">↷ Redo</button>
+        <button id="new-chat-btn" class="toolbar-button" title="Start a new chat">＋ New chat</button>
+      </div>
+      <div id="chat-container" class="chat-container"></div>
+      <div class="input-area">
+        <textarea id="editor" placeholder="Type your message..."></textarea>
+        <button id="enter-btn" class="enter-button">Send</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/main.ts"></script>
+</body>
+</html>
+

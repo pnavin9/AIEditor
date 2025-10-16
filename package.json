@@ -1,0 +1,33 @@
+{
+  "name": "aieditor",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run api & vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "npm run api & vite",
+    "api": "node server.cjs",
+    "lint": "eslint . --ext .ts,.js --max-warnings=0",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@mistralai/mistralai": "^1.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsdoc": "^61.1.4",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
