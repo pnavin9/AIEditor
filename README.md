@@ -50,6 +50,7 @@ Open `http://localhost:3001` (server serves `dist/`).
 - Change viewer is not inline; it opens as a modal rather than inline diff.
 - Exact text location is not guaranteed; the app guesses where the text occurs in the MD file.
 - Applying accepts replaces all instances of `old_text` with `new_text` in the matched region.
+- On conflict (multiple matches of the selected text), the server returns 409 and no change is applied.
 
 ### Scripts
 
